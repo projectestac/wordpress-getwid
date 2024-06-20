@@ -109,7 +109,7 @@ class ScriptsManager {
 
 		global $pagenow;
 
-		$dependencies = array( 'wp-i18n', 'wp-element', 'wp-blocks', 'wp-components', 'wp-api', 'wp-api-fetch' );
+		$dependencies = array( 'wp-i18n', 'wp-element', 'wp-blocks', 'wp-components', 'wp-api', 'wp-api-fetch', 'lodash' );
 
 		if ( $pagenow && $pagenow === 'widgets.php' ) {
 			array_push( $dependencies, 'wp-edit-widgets' );
@@ -154,7 +154,7 @@ class ScriptsManager {
 						'date_time_utc' => current_time('Y-m-d H:i:s'),
 						'post_type' => get_post_type(),
 						'google_api_key'  => get_option( 'getwid_google_api_key', '' ),
-						'instagram_token' => get_option( 'getwid_instagram_token', '' ),
+						'instagram_token_isset' => (bool) get_option( 'getwid_instagram_token', '' ),
 
 						'assets_path' => getwid_get_plugin_url( '/assets' ),
 						'image_sizes' => $this->get_image_sizes(),
@@ -184,9 +184,9 @@ class ScriptsManager {
 					],
 					'nonces' => array(
 						'google_api_key' => wp_create_nonce( 'getwid_nonce_google_api_key' ),
-						'recaptcha_v2_contact_form' => wp_create_nonce( 'getwid_nonce_contact_form' ),
+						'recaptcha_v2' => wp_create_nonce( 'getwid_nonce_recaptcha_v2' ),
 						'mailchimp_api_key' => wp_create_nonce( 'getwid_nonce_mailchimp_api_key' ),
-						'get_instagram_token' => wp_create_nonce( 'getwid_nonce_get_instagram_token' )
+						'check_instagram_token' => wp_create_nonce( 'getwid_nonce_check_instagram_token' )
 					),
 					'acf_exist' => getwid_acf_is_active(),
 				]
@@ -231,6 +231,9 @@ class ScriptsManager {
 					getwid_get_plugin_url( 'assets/css/blocks.style' . $rtl . '.css' ),
 
 					// section, banner, icon-box, icon, image-box, image-hotspot, media-text-slider, video-popup, post-carousel, post-slider, images-slider
+					/**
+					 * Filters frontend style dependencies.
+					 */
 					apply_filters(
 						'getwid/blocks_style_css/dependencies',
 						[]
@@ -254,6 +257,9 @@ class ScriptsManager {
 			return;
 		}
 
+		/**
+		 * Filters frontend script dependencies.
+		 */
 		wp_enqueue_script(
 			"{$this->prefix}-blocks-frontend-js",
 			getwid_get_plugin_url( 'assets/js/frontend.blocks.js' ),
@@ -277,7 +283,7 @@ class ScriptsManager {
 					'ajax_url' => admin_url( 'admin-ajax.php' ),
 					'isRTL' => is_rtl(),
 					'nonces' => array(
-						'recaptcha_v2_contact_form' => wp_create_nonce( 'getwid_nonce_contact_form' )
+						'contact_form' => wp_create_nonce( 'getwid_nonce_send_contact_form' )
 					),
 				]
 			)

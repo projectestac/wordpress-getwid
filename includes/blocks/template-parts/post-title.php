@@ -58,7 +58,7 @@ class PostTitle extends \Getwid\Blocks\AbstractBlock {
         );
     }
 
-    private function block_frontend_assets() {
+    public function block_frontend_assets() {
 
         if ( is_admin() ) {
             return;
@@ -132,7 +132,7 @@ class PostTitle extends \Getwid\Blocks\AbstractBlock {
         getwid_custom_color_style_and_class( $title_style, $title_class, $attributes, 'color', $is_back_end );
 
         $result = '';
-        $headerTag = $attributes[ 'headerTag' ];
+        $headerTag = $this->validateHeadingHTMLTag( $attributes[ 'headerTag' ] );
 
         $extra_attr = array(
             'headerTag'   => $headerTag,

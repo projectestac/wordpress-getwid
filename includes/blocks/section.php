@@ -40,14 +40,6 @@ class Section extends \Getwid\Blocks\AbstractBlock {
 				true
 			);
 
-			wp_register_script(
-				'draggabilly',
-				getwid_get_plugin_url( 'vendors/draggabilly/draggabilly.pkgd.min.js' ),
-				[ 'jquery' ],
-				'2.2.0',
-				true
-			);
-
 			wp_register_style(
 				'animate',
 				getwid_get_plugin_url( 'vendors/animate.css/animate.min.css' ),
@@ -110,15 +102,10 @@ class Section extends \Getwid\Blocks\AbstractBlock {
             array_push( $scripts, 'slick' );
         }
 
-		//draggabilly.pkgd.min.js
-        if ( ! in_array( 'draggabilly', $scripts ) ) {
-            array_push( $scripts, 'draggabilly' );
-		}
-
         return $scripts;
     }
 
-    private function block_frontend_assets( $attributes = [], $content = '' ) {
+    public function block_frontend_assets( $attributes = [], $content = '' ) {
 
         if ( is_admin() ) {
             return;
@@ -136,7 +123,6 @@ class Section extends \Getwid\Blocks\AbstractBlock {
 			}
         }
 
-		//todo:
 		$has_background_slider = false !== strpos( $content, 'wp-block-getwid-section__background-slider-item' );
         //slick.min.js
 		if ( $has_background_slider && ! wp_script_is( 'slick', 'enqueued' ) ) {

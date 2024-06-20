@@ -94,7 +94,7 @@ class RecentPosts extends \Getwid\Blocks\AbstractBlock {
 		return __('Recent Posts', 'getwid');
 	}
 
-    private function block_frontend_assets() {
+    public function block_frontend_assets() {
 
 		if ( is_admin() ) {
             return;
@@ -174,6 +174,8 @@ class RecentPosts extends \Getwid\Blocks\AbstractBlock {
 		if ( isset( $attributes['columns'] ) && $attributes['postLayout'] === 'grid' ) {
 			$wrapper_class .= ' getwid-columns getwid-columns-' . $attributes['columns'];
 		}
+
+		$attributes['titleTag'] = $this->validateHeadingHTMLTag( $attributes['titleTag'] );
 
 		$q = new \WP_Query( $query_args );
 		ob_start();

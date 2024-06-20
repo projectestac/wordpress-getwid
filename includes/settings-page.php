@@ -20,10 +20,24 @@ class SettingsPage {
     public function getSettingsGroups()
 	{
 		return [
-			'general' => __('General', 'getwid'),
-			'appearance' => __('Appearance', 'getwid'),
-			'blocks' => __('Blocks', 'getwid'),
-			'post_templates' => __('Post Templates', 'getwid'),
+			'general' => [
+				'title' => __('General', 'getwid'),
+				'sections' => [
+					'contact_from' => __('Contact Form Settings', 'getwid'),
+				]
+			],
+			'appearance' => [
+				'title' => __('Appearance', 'getwid'),
+				'sections' => [ ]
+			],
+			'blocks' => [
+				'title' => __('Blocks', 'getwid'),
+				'sections' => [ ]
+			],
+			'post_templates' => [
+				'title' => __('Post Templates', 'getwid'),
+				'sections' => [ ]
+			]
 		];
 	}
 
@@ -42,13 +56,22 @@ class SettingsPage {
 	{
 		$settings_groups = $this->getSettingsGroups();
 
-		foreach ($settings_groups as $id => $title){
+		foreach ($settings_groups as $id => $group) {
 			add_settings_section(
 				'getwid_' . $id,
 				'',
 				'',
 				'getwid_' . $id
 			);
+
+			foreach ($group['sections'] as $section_id => $section) {
+				add_settings_section(
+					'getwid_' . $section_id,
+					$section,
+					'',
+					'getwid_' . $id
+				);
+			}
 		}
 	}
 
@@ -68,11 +91,11 @@ class SettingsPage {
 
 			<h2 class="nav-tab-wrapper">
 				<?php
-				foreach ($settings_groups as $tab_id => $tab_title) :
+				foreach ($settings_groups as $tab_id => $tab) :
 					$active_tab_class = $tab_id == $active_tab_id ? 'nav-tab-active' : '';
 				?>
 					<a href="<?php echo esc_url( $this->getTabUrl($tab_id) ); ?>" class="nav-tab <?php echo esc_attr($active_tab_class); ?>">
-						<?php echo esc_html($tab_title)?>
+						<?php echo esc_html($tab['title']); ?>
 					</a>
 				<?php
 				endforeach;
@@ -116,8 +139,7 @@ class SettingsPage {
         <?php
     }
 
-    public function checkInstagramQueryURL()
-    {
+    public function checkInstagramQueryURL() {
         global $pagenow;
 
         if ( $pagenow == 'options-general.php' && isset( $_GET['instagram-token'] ) && isset( $_GET['nonce'] ) ) {
@@ -173,7 +195,7 @@ class SettingsPage {
 		/* #endregion */
 
 		/* #region AssetsOptimization */
-		add_settings_field( 'getwid_assets_optimization', __( 'Performance Optimization', 'getwid' ) . ' (Beta)',
+		add_settings_field( 'getwid_assets_optimization', __( 'Performance Optimization', 'getwid' ),
 				[ $this, 'renderAssetsOptimization'], 'getwid_general', 'getwid_general' );
 		register_setting( 'getwid_general', 'getwid_load_assets_on_demand', [ 'type' => 'boolean', 'default' => false, 'sanitize_callback' => 'rest_sanitize_boolean' ] );
 
@@ -199,14 +221,20 @@ class SettingsPage {
         /* #endregion */
 
         /* #region Recaptcha Site Key */
+        add_settings_field( 'getwid_contact_form_recipient_email', __( 'Recipient Email Address', 'getwid' ),
+            [ $this, 'renderContactFormRecipientEmail' ], 'getwid_general', 'getwid_contact_from' );
+        register_setting( 'getwid_general', 'getwid_contact_form_recipient_email', [ 'type' => 'text', 'default' => '' ] );
+        /* #endregion */
+
+        /* #region Recaptcha Site Key */
         add_settings_field( 'getwid_recaptcha_v2_site_key', __( 'Recaptcha Site Key', 'getwid' ),
-            [ $this, 'renderRecaptchaSiteKey' ], 'getwid_general', 'getwid_general' );
+            [ $this, 'renderRecaptchaSiteKey' ], 'getwid_general', 'getwid_contact_from' );
         register_setting( 'getwid_general', 'getwid_recaptcha_v2_site_key', [ 'type' => 'text', 'default' => '' ] );
         /* #endregion */
 
         /* #region Recaptcha Secret Key */
         add_settings_field( 'getwid_recaptcha_v2_secret_key', __( 'Recaptcha Secret Key', 'getwid' ),
-            [ $this, 'renderRecaptchaSecretKey' ], 'getwid_general', 'getwid_general' );
+            [ $this, 'renderRecaptchaSecretKey' ], 'getwid_general', 'getwid_contact_from' );
         register_setting( 'getwid_general', 'getwid_recaptcha_v2_secret_key', [ 'type' => 'text', 'default' => '' ] );
         /* #endregion */
 
@@ -236,13 +264,14 @@ class SettingsPage {
         ?>
 		<input type="number" id="getwid_section_content_width" name="getwid_section_content_width" value="<?php echo esc_attr( $field_val ); ?>" />
         <?php echo esc_html_x( 'px', 'pixels', 'getwid' ); ?>
-		<p class="description"><?php echo esc_html__( 'Default width of content area in the Section block. Leave empty to use the width set in your theme.', 'getwid' ); ?></p>
+		<p class="description"><?php echo esc_html__( 'Default width of the content area in the Section block. Leave empty to use $content_width set in your theme. Set 0 to disable this option and control it via CSS.', 'getwid' ); ?></p>
 		<?php
     }
 
     public function renderInstagramToken() {
 
-        $field_val = get_option('getwid_instagram_token', '');
+		$encryption = new StringEncryption();
+        $field_val = $encryption->decrypt( get_option( 'getwid_instagram_token', '' ) );
 
 		$connectURL = add_query_arg(
 			['nonce' => wp_create_nonce('getwid_nonce_save_instagram_token') ],
@@ -255,7 +284,47 @@ class SettingsPage {
 		);
 
 		?>
-		<input type="text" id="getwid_instagram_token" name="getwid_instagram_token" class="regular-text" value="<?php echo esc_attr( $field_val ); ?>" />
+		<input type="text" id="getwid_instagram_token" name="getwid_instagram_token" class="regular-text" value="<?php echo esc_attr( $field_val ); ?>" /><?php
+
+			if ( ! empty( $field_val ) ) {
+
+				try {
+
+					$profile_data_json = wp_remote_get(
+						'https://graph.instagram.com/me?fields=username&access_token=' . $field_val
+					);
+
+					if ( ( ! is_wp_error( $profile_data_json ) ) && ( 200 === wp_remote_retrieve_response_code( $profile_data_json ) ) ) {
+
+						$profile_data = json_decode( $profile_data_json['body'] );
+
+						if ( json_last_error() === JSON_ERROR_NONE ) {
+
+							if ( isset( $profile_data->username ) ) {
+
+								echo '<p class="description">' . sprintf(
+									//translators: %s is username or user id
+									esc_html__('Account: %s', 'getwid'),
+									esc_html( $profile_data->username )
+								) . '<p>';
+
+							} elseif ( isset( $profile_data->id ) ) {
+
+								echo '<p class="description">' . sprintf(
+									//translators: %s is username or user id
+									esc_html__('Account: %s', 'getwid'),
+									esc_html( $profile_data->id )
+								) . '</p>';
+							}
+						}
+					}
+				} catch ( \Exception $profile_data_exception ) {
+
+					echo esc_html( $profile_data_exception->getMessage() );
+				}
+			}
+
+		?>
         <p><a href="<?php echo esc_url(
 			'https://api.instagram.com/oauth/authorize?client_id=910186402812397&redirect_uri=' .
 			'https://api.getmotopress.com/get_instagram_token.php&scope=user_profile,user_media&response_type=code&state=' .
@@ -289,6 +358,16 @@ class SettingsPage {
         <input type="text" id="getwid_google_api_key" name="getwid_google_api_key" class="regular-text" value="<?php echo esc_attr( $field_val ); ?>" />
 		<?php
     }
+
+	public function renderContactFormRecipientEmail() {
+
+		$field_val = get_option( 'getwid_contact_form_recipient_email', '' );
+		$default_email = get_option( 'admin_email' );
+
+		?>
+		<input type="text" id="getwid_contact_form_recipient_email" name="getwid_contact_form_recipient_email" class="regular-text" value="<?php echo esc_attr( $field_val ); ?>"  placeholder="<?php echo esc_attr( $default_email ); ?>"/>
+		<?php
+	}
 
     public function renderRecaptchaSiteKey() {
 
@@ -391,7 +470,7 @@ class SettingsPage {
 			<label for="getwid_load_assets_on_demand">
 				<input type="checkbox" id="getwid_load_assets_on_demand" name="getwid_load_assets_on_demand" value="1" <?php
 					checked( '1', $getwid_load_assets_on_demand ); ?> />
-				<?php echo esc_html__('Load CSS and JS of blocks on demand', 'getwid'); ?>
+				<?php echo esc_html__('Load CSS and JS of blocks on demand', 'getwid') . ' (Recomended)'; ?>
 			</label>
 			<p class="description"><?php
 				echo esc_html__('If this option is on, all CSS and JS files of blocks will be loaded on demand in footer. This will reduce the amount of heavy assets on the page.', 'getwid');
@@ -400,7 +479,7 @@ class SettingsPage {
 			<label for="getwid_move_css_to_head">
 				<input type="checkbox" id="getwid_move_css_to_head" name="getwid_move_css_to_head" value="1" <?php
 					checked( '1', $getwid_move_css_to_head ); ?> />
-				<?php echo esc_html__('Aggregate all CSS files of blocks in header', 'getwid'); ?>
+				<?php echo esc_html__('Aggregate all CSS files of blocks in header', 'getwid') . ' (Recomended)'; ?>
 			</label>
 			<p class="description"><?php
 				echo esc_html__('If this option is on, all CSS files of blocks will be moved to header for better theme compatibility. If your theme has custom styling for Getwid blocks, its styles will be applied first.', 'getwid');

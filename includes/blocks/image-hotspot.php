@@ -24,14 +24,6 @@ class ImageHotspot extends \Getwid\Blocks\AbstractBlock {
 
 			//Register JS/CSS assets
 			wp_register_script(
-				'draggabilly',
-				getwid_get_plugin_url( 'vendors/draggabilly/draggabilly.pkgd.min.js' ),
-				[ 'jquery' ],
-				'2.2.0',
-				true
-			);
-
-			wp_register_script(
 				'popper',
 				getwid_get_plugin_url( 'vendors/tippy.js/popper.min.js' ),
 				[ 'jquery' ],
@@ -103,16 +95,6 @@ class ImageHotspot extends \Getwid\Blocks\AbstractBlock {
 
     public function block_editor_scripts($scripts) {
 
-        //imagesloaded.min.js
-		if ( ! in_array( 'imagesloaded', $scripts ) ) {
-            array_push( $scripts, 'imagesloaded' );
-		}
-
-		//draggabilly.pkgd.min.js
-        if ( ! in_array( 'draggabilly', $scripts ) ) {
-            array_push( $scripts, 'draggabilly' );
-		}
-
 		//popper.min.js
         if ( ! in_array( 'popper', $scripts ) ) {
             array_push( $scripts, 'popper' );
@@ -126,7 +108,7 @@ class ImageHotspot extends \Getwid\Blocks\AbstractBlock {
         return $scripts;
     }
 
-    private function block_frontend_assets() {
+    public function block_frontend_assets() {
 
 		if ( is_admin() ) {
 			return;
