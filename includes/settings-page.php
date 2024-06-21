@@ -19,6 +19,20 @@ class SettingsPage {
 
     public function getSettingsGroups()
 	{
+		// XTEC ************ AFEGIT - Hide config params to all users but xtecadmin
+		// 2024.06.21 @joalesmo
+		if ( !is_xtec_super_admin() ) {
+			return [
+				'general' => [
+				'title' => __('General', 'getwid'),
+				'sections' => []
+				]
+			];
+		}
+		// XTEC ************ AFEGIT - Hide config params to all users but xtecadmin
+		// 2024.06.21 @joalesmo
+		//************ FI
+
 		return [
 			'general' => [
 				'title' => __('General', 'getwid'),
@@ -195,11 +209,23 @@ class SettingsPage {
 		/* #endregion */
 
 		/* #region AssetsOptimization */
+
+		// XTEC ************ AFEGIT - Hide config params to all users but xtecadmin
+		// 2024.06.21 @joalesmo
+		if (is_xtec_super_admin()) {
+		//************ FI
+
 		add_settings_field( 'getwid_assets_optimization', __( 'Performance Optimization', 'getwid' ),
 				[ $this, 'renderAssetsOptimization'], 'getwid_general', 'getwid_general' );
 		register_setting( 'getwid_general', 'getwid_load_assets_on_demand', [ 'type' => 'boolean', 'default' => false, 'sanitize_callback' => 'rest_sanitize_boolean' ] );
 
 		register_setting( 'getwid_general', 'getwid_move_css_to_head', [ 'type' => 'boolean', 'default' => false, 'sanitize_callback' => 'rest_sanitize_boolean' ] );
+
+		// XTEC ************ AFEGIT - Hide config params to all users but xtecadmin
+		// 2024.06.21 @joalesmo
+		}
+		//************ FI
+
 		/* #endregion */
 
         /* #region Instagram Access Token */
@@ -215,9 +241,21 @@ class SettingsPage {
         /* #endregion */
 
         /* #region Google API Key */
+
+		// XTEC ************ AFEGIT - Hide config params to all users but xtecadmin
+		// 2024.06.21 @joalesmo
+		if (is_xtec_super_admin()) {
+		//************ FI
+
         add_settings_field( 'getwid_google_api_key', __( 'Google Maps API Key', 'getwid' ),
             [ $this, 'renderGoogleApiKey' ], 'getwid_general', 'getwid_general' );
         register_setting( 'getwid_general', 'getwid_google_api_key', [ 'type' => 'text', 'default' => '' ] );
+
+		// XTEC ************ AFEGIT - Hide config params to all users but xtecadmin
+		// 2024.06.21 @joalesmo
+		}
+		//************ FI
+
         /* #endregion */
 
         /* #region Recaptcha Site Key */
@@ -239,9 +277,21 @@ class SettingsPage {
         /* #endregion */
 
         /* #region Mailchimp Api Key */
+
+		// XTEC ************ AFEGIT - Hide config params to all users but xtecadmin
+		// 2024.06.21 @joalesmo
+		if (is_xtec_super_admin()) {
+		//************ FI
+
         add_settings_field( 'getwid_mailchimp_api_key', __( 'Mailchimp API Key', 'getwid' ),
             [ $this, 'renderMailchimpApiKey' ], 'getwid_general', 'getwid_general' );
         register_setting( 'getwid_general', 'getwid_mailchimp_api_key', [ 'type' => 'text', 'default' => '' ] );
+
+		// XTEC ************ AFEGIT - Hide config params to all users but xtecadmin
+		// 2024.06.21 @joalesmo
+		}
+		//************ FI
+
         /* #endregion */
 
 		/* #region Disabled Blocks */
